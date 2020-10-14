@@ -6,7 +6,8 @@ dotenv.config();
 const app = express();
 const port = 3000;
 const bodyParser = require('body-parser');
-const open = require('open');
+// const open = require('open');
+const resolvers = require('./resolvers');
 const annotationHandler = require('./annotationHandler');
 
 const corsOption = {
@@ -14,10 +15,7 @@ const corsOption = {
   credentials: true,
 };
 const server = new CollabServer({
-  resolvers: {
-    Query: {},
-    Mutation: {},
-  },
+  resolvers,
   logLevel: CollabServer.LogLevels.INFO,
   corsOption,
 });
@@ -29,5 +27,3 @@ server.start(port);
 //   console.info(`Server listening at port ${port}`);
 //   open('http://localhost:3000/index.html');
 // });
-
-// annotationHandler(app);
