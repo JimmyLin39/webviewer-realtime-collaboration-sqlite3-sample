@@ -3,6 +3,10 @@
 .DS_Store?
 ._*
 node_modules
+.parcel-cache
+.cache
+dist
+.env
 
 # WebViewer
 client/lib
