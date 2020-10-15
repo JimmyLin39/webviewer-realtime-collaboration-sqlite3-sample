@@ -7,57 +7,45 @@ CREATE TABLE IF NOT EXISTS users (
   type TEXT,
   customData TEXT,
   createdAt INTEGER NOT NULL,
-  updatedAt INTEGER NOT NULL
+  updatedAt INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS documents (
   id TEXT NOT NULL PRIMARY KEY,
-  name TEXT
+  name TEXT,
   authorId TEXT NOT NULL,
-  FOREIGN KEY (authorId)
-      REFERENCES users (id)
   isPublic INTEGER NOT NULL,
   createdAt INTEGER NOT NULL,
-  updatedAt INTEGER NOT NULL,
+  updatedAt INTEGER,
+  FOREIGN KEY (authorId) REFERENCES users (id)
 );
-
 CREATE TABLE IF NOT EXISTS annotations (
   id TEXT NOT NULL PRIMARY KEY,
   xfdf TEXT,
   authorId TEXT NOT NULL,
-  FOREIGN KEY (authorId)
-      REFERENCES users (id)
   documentId TEXT NOT NULL,
-  FOREIGN KEY (documentId)
-      REFERENCES documents (id)
-      ON DELETE CASCADE,
   pageNumber INTEGER NOT NULL,
   createdAt INTEGER NOT NULL,
-  updatedAt INTEGER NOT NULL,
-  inReplyTo TEXT
+  updatedAt INTEGER,
+  inReplyTo TEXT,
+  FOREIGN KEY (authorId) REFERENCES users (id)
+  FOREIGN KEY (documentId) REFERENCES documents (id) ON DELETE CASCADE
 );
-
 CREATE TABLE IF NOT EXISTS annotationMembers (
   id TEXT NOT NULL PRIMARY KEY,
-  userId TEXT REFERENCES users (id),
+  userId TEXT,
   documentId TEXT NOT NULL,
-  FOREIGN KEY (documentId)
-      REFERENCES documents (id)
-      ON DELETE CASCADE,
   annotationId TEXT NOT NULL,
-  FOREIGN KEY (annotationId)
-      REFERENCES annotations (id)
-      ON DELETE CASCADE,
   lastRead INTEGER,
-  permission TEXT
+  permission TEXT,
+  FOREIGN KEY (userId) REFERENCES users (id)
+  FOREIGN KEY (documentId) REFERENCES documents (id) ON DELETE CASCADE
+  FOREIGN KEY (annotationId) REFERENCES annotations (id) ON DELETE CASCADE
 );
-
 CREATE TABLE IF NOT EXISTS documentMembers (
   id TEXT NOT NULL PRIMARY KEY,
-  userId TEXT REFERENCES users (id),
+  userId TEXT,
   documentId TEXT NOT NULL,
-  FOREIGN KEY (documentId)
-      REFERENCES documents (id)
-      ON DELETE CASCADE,
-  lastRead INTEGER NOT NULL
+  lastRead INTEGER NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users (id)
+  FOREIGN KEY (documentId) REFERENCES documents (id) ON DELETE CASCADE
 );
