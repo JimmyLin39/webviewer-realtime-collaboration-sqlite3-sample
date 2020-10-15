@@ -7,9 +7,7 @@ node_modules
 .cache
 dist
 .env
-
 # WebViewer
 client/lib
 client/license-key.js
-server/xfdf.db
-xfdf.db
+collab.db
