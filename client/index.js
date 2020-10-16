@@ -1,31 +1,10 @@
 import CollabClient from '@pdftron/collab-client';
 import WebViewer from '@pdftron/webviewer';
 
-const nameList = [
-  'Andy',
-  'Andrew',
-  'Logan',
-  'Justin',
-  'Matt',
-  'Sardor',
-  'Zhijie',
-  'James',
-  'Kristian',
-  'Mary',
-  'Patricia',
-  'Jennifer',
-  'Linda',
-  'David',
-  'Joseph',
-  'Thomas',
-  'Naman',
-  'Nancy',
-  'Sandra',
-];
 const url = `http://localhost:3000`;
 const subscriptionUrl = `ws://localhost:3000/subscribe`;
 const viewerElement = document.getElementById('viewer');
-const currentUser = nameList[Math.floor(Math.random() * nameList.length)];
+const currentUser = 'John';
 const client = new CollabClient({
   url,
   subscriptionUrl,
@@ -45,7 +24,7 @@ WebViewer(
     client.loadDocument(
       'https://pdftron.s3.amazonaws.com/downloads/pl/demo-annotated.pdf',
       {
-        documentId: '1',
+        documentId: 'abcde',
         filename: 'demo-annotated.pdf',
       }
     );

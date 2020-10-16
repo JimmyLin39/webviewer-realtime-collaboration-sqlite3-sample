@@ -1,11 +1,8 @@
 const CollabServer = require('@pdftron/collab-server');
-const express = require('express');
 const dotenv = require('dotenv');
 
 dotenv.config();
-const app = express();
 const port = 3000;
-const bodyParser = require('body-parser');
 const resolvers = require('./resolvers');
 
 const corsOption = {
@@ -15,9 +12,8 @@ const corsOption = {
 
 const server = new CollabServer({
   resolvers,
-  logLevel: CollabServer.LogLevels.DEBUG,
   corsOption,
+  logLevel: CollabServer.LogLevels.DEBUG,
 });
 
-app.use(bodyParser.text());
 server.start(port);

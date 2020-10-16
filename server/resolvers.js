@@ -1,6 +1,7 @@
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
+// Read query file
 const initDatabaseQuery = fs
   .readFileSync(`${__dirname}/init_database.sql`)
   .toString();
@@ -33,9 +34,9 @@ db.serialize(() => {
   });
 });
 
-const getQueryResponse = (functionName, query, param) => {
-  console.log(`${functionName} - ${query},`, param);
-  return new Promise((resolve, reject) => {
+const getQueryResponse = (functionName, query, param) =>
+  // console.log(`${functionName} - ${query},`, param);
+  new Promise((resolve, reject) => {
     db.all(query, param, (err, rows) => {
       if (err) {
         console.error(err);
@@ -44,8 +45,6 @@ const getQueryResponse = (functionName, query, param) => {
       resolve(rows);
     });
   });
-};
-
 module.exports = {
   Query: {
     user: async id => {
