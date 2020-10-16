@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { get } = require('http');
 const sqlite3 = require('sqlite3').verbose();
 
 const initDatabaseQuery = fs
@@ -39,6 +38,7 @@ const getQueryResponse = (functionName, query, param) => {
   return new Promise((resolve, reject) => {
     db.all(query, param, (err, rows) => {
       if (err) {
+        console.error(err);
         reject(err);
       }
       resolve(rows);
@@ -53,6 +53,14 @@ module.exports = {
         'Query.user',
         `SELECT * FROM users WHERE id = ?`,
         [id]
+      );
+      return res[0] || null;
+    },
+    userWithEmail: async email => {
+      const res = await getQueryResponse(
+        'Query.userWithEmail',
+        `SELECT * FROM users WHERE email = ?`,
+        [email]
       );
       return res[0] || null;
     },
@@ -88,11 +96,43 @@ module.exports = {
       );
       return res[0] || null;
     },
+    documentMember: async memberId => {
+      const res = await getQueryResponse(
+        'Query.documentMember',
+        `SELECT * FROM documentMembers WHERE id = ?`,
+        [memberId]
+      );
+      return res[0] || null;
+    },
+    annotations: async docId => {
+      const res = await getQueryResponse(
+        'Query.annotations',
+        `SELECT * FROM annotations WHERE documentId = ?`,
+        [docId]
+      );
+      return res;
+    },
     userDocuments: async userId => {
       const res = await getQueryResponse(
         'Query.userDocuments',
         `SELECT * FROM documents WHERE id IN ( SELECT documentId AS id FROM documentMembers WHERE userId = ?)`,
         [userId]
+      );
+      return res;
+    },
+    annotationMembers: async annotId => {
+      const res = await getQueryResponse(
+        'Query.annotationMembers',
+        `SELECT * FROM annotationMembers WHERE annotationId = ?`,
+        [annotId]
+      );
+      return res;
+    },
+    documentMembers: async docId => {
+      const res = await getQueryResponse(
+        'Query.documentMembers',
+        `SELECT * FROM documentMembers WHERE documentId = ?`,
+        [docId]
       );
       return res;
     },
@@ -111,6 +151,50 @@ module.exports = {
       );
       return res[0] || null;
     },
+    addAnnotation: async user => {
+      const res = await getQueryResponse(
+        'Mutation.addAnnotation',
+        `
+          INSERT INTO annotations
+          (id, xfdf, authorId, documentId, pageNumber, createdAt, inReplyTo)
+          VALUES
+          (?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          user.id,
+          user.xfdf,
+          user.authorId,
+          user.documentId,
+          user.pageNumber,
+          user.createdAt,
+          user.inReplyTo,
+        ]
+      );
+      return res[0] || null;
+    },
+    editAnnotation: async (id, editAnnotInput) => {
+      const editedAnnot = await getQueryResponse(
+        'Mutation.editAnnotation',
+        `
+          UPDATE annotations SET xfdf = ?, pageNumber = ?
+          WHERE id = ?
+        `,
+        [editAnnotInput.xfdf, editAnnotInput.pageNumber, id]
+      );
+      return editedAnnot;
+    },
+    deleteAnnotation: async id => {
+      try {
+        await getQueryResponse(
+          'Mutation.deleteAnnotation',
+          `DELETE FROM annotations WHERE id = ?`,
+          [id]
+        );
+        return { successful: true };
+      } catch (error) {
+        return { successful: false };
+      }
+    },
     addDocument: async doc => {
       const res = await getQueryResponse(
         'Mutation.addDocument',
@@ -123,6 +207,118 @@ module.exports = {
         [doc.id, doc.createdAt, doc.authorId, doc.isPublic, doc.name]
       );
       return res[0] || null;
+    },
+
+    editDocument: async (id, editDocInput) => {
+      const res = await getQueryResponse(
+        'Mutation.editDocument',
+        `
+          UPDATE documents
+          SET name = ?, isPublic = ?
+          WHERE id = ?
+        `,
+        [editDocInput.name, editDocInput.isPublic, id]
+      );
+      return res[0] || null;
+    },
+    deleteDocument: async id => {
+      try {
+        await getQueryResponse(
+          'Mutation.deleteDocument',
+          `
+            DELETE FROM documents WHERE id = ?
+          `,
+          [id]
+        );
+        return { successful: true };
+      } catch (error) {
+        return { successful: false };
+      }
+    },
+    addDocumentMember: async member => {
+      const res = await getQueryResponse(
+        'Mutation.addDocumentMember',
+        `
+          INSERT INTO documentMembers
+          (id, userId, documentId, lastRead)
+          VALUES
+          (?, ?, ?, ?)
+        `,
+        [member.id, member.userId, member.documentId, member.lastRead]
+      );
+      return res[0] || null;
+    },
+    editDocumentMember: async (id, editMemberInput) => {
+      const editedMemer = await getQueryResponse(
+        'Mutation.editDocumentMember',
+        `
+          UPDATE documentMembers
+          SET lastRead = ?
+          WHERE id = ?
+        `,
+        [editMemberInput.lastRead, id]
+      );
+      return editedMemer;
+    },
+    deleteDocumentMember: async id => {
+      try {
+        await getQueryResponse(
+          'Mutation.deleteDocumentMember',
+          `
+            DELETE FROM document_members WHERE id = ?
+          `,
+          [id]
+        );
+        return { successful: true };
+      } catch (error) {
+        return { successful: false };
+      }
+    },
+    addAnnotationMember: async member => {
+      const res = await getQueryResponse(
+        'Mutation.addAnnotationMember',
+        `
+          INSERT INTO annotationMembers
+          (id, documentId, lastRead, annotationId, permission, userId)
+          VALUES
+          (?, ?, ?, ?, ?, ?)
+        `,
+        [
+          member.id,
+          member.documentId,
+          member.lastRead,
+          member.annotationId,
+          member.permission,
+          member.userId,
+        ]
+      );
+      return res[0] || null;
+    },
+    editAnnotationMember: async (id, editMemberInput) => {
+      const editedMemer = await getQueryResponse(
+        'Mutation.editAnnotationMember',
+        `
+          UPDATE annotationMembers
+          SET lastRead = ?, permission = ?
+          WHERE id = ?
+        `,
+        [editMemberInput.lastRead, editMemberInput.permission, id]
+      );
+      return editedMemer;
+    },
+    deleteAnnotationMember: async id => {
+      try {
+        await getQueryResponse(
+          'Mutation.deleteAnnotationMember',
+          `
+          DELETE FROM annotationMembers WHERE id = ?
+        `,
+          [id]
+        );
+        return { successful: true };
+      } catch (error) {
+        return { successful: false };
+      }
     },
   },
 };
