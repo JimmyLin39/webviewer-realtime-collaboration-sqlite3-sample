@@ -21,10 +21,10 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE TABLE IF NOT EXISTS annotations (
   id TEXT NOT NULL PRIMARY KEY,
   xfdf TEXT,
-  authorId TEXT NOT NULL,
-  documentId TEXT NOT NULL,
+  authorId TEXT,
+  documentId TEXT,
   pageNumber INTEGER NOT NULL,
-  createdAt INTEGER NOT NULL,
+  createdAt INTEGER,
   updatedAt INTEGER,
   inReplyTo TEXT,
   FOREIGN KEY (authorId) REFERENCES users (id)
