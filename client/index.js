@@ -26,7 +26,6 @@ const url = `http://localhost:3000`;
 const subscriptionUrl = `ws://localhost:3000/subscribe`;
 const viewerElement = document.getElementById('viewer');
 const currentUser = nameList[Math.floor(Math.random() * nameList.length)];
-
 const client = new CollabClient({
   url,
   subscriptionUrl,
@@ -34,17 +33,15 @@ const client = new CollabClient({
 
 WebViewer(
   {
-    path: '/public/webviewer', // path to the PDFTron 'lib' folder
-    // initialDoc:
-    //   'https://pdftron.s3.amazonaws.com/downloads/pl/demo-annotated.pdf',
+    path: '/public/webviewer',
   },
   viewerElement
 ).then(instance => {
   // Instance is ready here
   client.setInstance(instance);
+  // Login anonymously
   client.loginAnonymously(currentUser).then(() => {
     // Load document
-
     client.loadDocument(
       'https://pdftron.s3.amazonaws.com/downloads/pl/demo-annotated.pdf',
       {
@@ -52,19 +49,5 @@ WebViewer(
         filename: 'demo-annotated.pdf',
       }
     );
-    instance.openElements(['leftPanel']);
-    const annotManager = instance.docViewer.getAnnotationManager();
-    // Assign a random name to client
-    annotManager.setCurrentUser(
-      nameList[Math.floor(Math.random() * nameList.length)]
-    );
   });
-
-  // let { hash = '' } = window.location;
-  // hash = hash.replace('#', '');
-
-  // instance.loadDocument(fileURL);
-  // instance.docViewer.on('documentLoaded', () => {
-  //   client.setSession(hash);
-  // })
 });
