@@ -34,8 +34,7 @@ db.serialize(() => {
   });
 });
 
-const getQueryResponse = (functionName, query, param) =>
-  // console.log(`${functionName} - ${query},`, param);
+const getQueryResponse = (query, param) =>
   new Promise((resolve, reject) => {
     db.all(query, param, (err, rows) => {
       if (err) {
@@ -48,16 +47,13 @@ const getQueryResponse = (functionName, query, param) =>
 module.exports = {
   Query: {
     user: async id => {
-      const res = await getQueryResponse(
-        'Query.user',
-        `SELECT * FROM users WHERE id = ?`,
-        [id]
-      );
+      const res = await getQueryResponse(`SELECT * FROM users WHERE id = ?`, [
+        id,
+      ]);
       return res[0] || null;
     },
     userWithEmail: async email => {
       const res = await getQueryResponse(
-        'Query.userWithEmail',
         `SELECT * FROM users WHERE email = ?`,
         [email]
       );
@@ -65,7 +61,6 @@ module.exports = {
     },
     annotation: async id => {
       const res = await getQueryResponse(
-        'Query.annotation',
         `SELECT * FROM annotations WHERE id = ?`,
         [id]
       );
@@ -73,7 +68,6 @@ module.exports = {
     },
     document: async id => {
       const res = await getQueryResponse(
-        'Query.document',
         `SELECT * FROM documents WHERE id = ?`,
         [id]
       );
@@ -82,14 +76,12 @@ module.exports = {
     annotationMember: async (annotId, userId, memberId) => {
       if (memberId) {
         const resWithMemberId = await getQueryResponse(
-          'Query.annotationMember',
           `SELECT * FROM annotationMembers WHERE id = ?`,
           [memberId]
         );
         return resWithMemberId[0] || null;
       }
       const res = await getQueryResponse(
-        'Query.annotationMember',
         `SELECT * FROM annotationMembers WHERE userId = ? AND annotationId = ?`,
         [userId, annotId]
       );
@@ -97,7 +89,6 @@ module.exports = {
     },
     documentMember: async memberId => {
       const res = await getQueryResponse(
-        'Query.documentMember',
         `SELECT * FROM documentMembers WHERE id = ?`,
         [memberId]
       );
@@ -105,7 +96,6 @@ module.exports = {
     },
     annotations: async docId => {
       const res = await getQueryResponse(
-        'Query.annotations',
         `SELECT * FROM annotations WHERE documentId = ?`,
         [docId]
       );
@@ -113,7 +103,6 @@ module.exports = {
     },
     userDocuments: async userId => {
       const res = await getQueryResponse(
-        'Query.userDocuments',
         `SELECT * FROM documents WHERE id IN ( SELECT documentId AS id FROM documentMembers WHERE userId = ?)`,
         [userId]
       );
@@ -121,7 +110,6 @@ module.exports = {
     },
     annotationMembers: async annotId => {
       const res = await getQueryResponse(
-        'Query.annotationMembers',
         `SELECT * FROM annotationMembers WHERE annotationId = ?`,
         [annotId]
       );
@@ -129,7 +117,6 @@ module.exports = {
     },
     documentMembers: async docId => {
       const res = await getQueryResponse(
-        'Query.documentMembers',
         `SELECT * FROM documentMembers WHERE documentId = ?`,
         [docId]
       );
@@ -139,7 +126,6 @@ module.exports = {
   Mutation: {
     addUser: async user => {
       const res = await getQueryResponse(
-        'Mutation.addUser',
         `
           INSERT INTO users
           (id, type, email, userName, createdAt)
@@ -152,7 +138,6 @@ module.exports = {
     },
     addAnnotation: async user => {
       const res = await getQueryResponse(
-        'Mutation.addAnnotation',
         `
           INSERT INTO annotations
           (id, xfdf, authorId, documentId, pageNumber, createdAt, inReplyTo)
@@ -173,7 +158,6 @@ module.exports = {
     },
     editAnnotation: async (id, editAnnotInput) => {
       const editedAnnot = await getQueryResponse(
-        'Mutation.editAnnotation',
         `
           UPDATE annotations SET xfdf = ?, pageNumber = ?
           WHERE id = ?
@@ -184,11 +168,7 @@ module.exports = {
     },
     deleteAnnotation: async id => {
       try {
-        await getQueryResponse(
-          'Mutation.deleteAnnotation',
-          `DELETE FROM annotations WHERE id = ?`,
-          [id]
-        );
+        await getQueryResponse(`DELETE FROM annotations WHERE id = ?`, [id]);
         return { successful: true };
       } catch (error) {
         return { successful: false };
@@ -196,7 +176,6 @@ module.exports = {
     },
     addDocument: async doc => {
       const res = await getQueryResponse(
-        'Mutation.addDocument',
         `
           INSERT INTO documents
           (id, createdAt, authorId, isPublic, name)
@@ -210,7 +189,6 @@ module.exports = {
 
     editDocument: async (id, editDocInput) => {
       const res = await getQueryResponse(
-        'Mutation.editDocument',
         `
           UPDATE documents
           SET name = ?, isPublic = ?
@@ -223,7 +201,6 @@ module.exports = {
     deleteDocument: async id => {
       try {
         await getQueryResponse(
-          'Mutation.deleteDocument',
           `
             DELETE FROM documents WHERE id = ?
           `,
@@ -236,7 +213,6 @@ module.exports = {
     },
     addDocumentMember: async member => {
       const res = await getQueryResponse(
-        'Mutation.addDocumentMember',
         `
           INSERT INTO documentMembers
           (id, userId, documentId, lastRead)
@@ -249,7 +225,6 @@ module.exports = {
     },
     editDocumentMember: async (id, editMemberInput) => {
       const editedMemer = await getQueryResponse(
-        'Mutation.editDocumentMember',
         `
           UPDATE documentMembers
           SET lastRead = ?
@@ -262,7 +237,6 @@ module.exports = {
     deleteDocumentMember: async id => {
       try {
         await getQueryResponse(
-          'Mutation.deleteDocumentMember',
           `
             DELETE FROM document_members WHERE id = ?
           `,
@@ -275,7 +249,6 @@ module.exports = {
     },
     addAnnotationMember: async member => {
       const res = await getQueryResponse(
-        'Mutation.addAnnotationMember',
         `
           INSERT INTO annotationMembers
           (id, documentId, lastRead, annotationId, permission, userId)
@@ -295,7 +268,6 @@ module.exports = {
     },
     editAnnotationMember: async (id, editMemberInput) => {
       const editedMemer = await getQueryResponse(
-        'Mutation.editAnnotationMember',
         `
           UPDATE annotationMembers
           SET lastRead = ?, permission = ?
@@ -307,13 +279,9 @@ module.exports = {
     },
     deleteAnnotationMember: async id => {
       try {
-        await getQueryResponse(
-          'Mutation.deleteAnnotationMember',
-          `
-          DELETE FROM annotationMembers WHERE id = ?
-        `,
-          [id]
-        );
+        await getQueryResponse(`DELETE FROM annotationMembers WHERE id = ?`, [
+          id,
+        ]);
         return { successful: true };
       } catch (error) {
         return { successful: false };
