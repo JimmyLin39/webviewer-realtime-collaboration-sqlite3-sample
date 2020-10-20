@@ -16,11 +16,8 @@ WebViewer(
   },
   viewerElement
 ).then(instance => {
-  // Instance is ready here
   client.setInstance(instance);
-  // Login anonymously
   client.loginAnonymously(currentUser).then(() => {
-    // Load document
     client.loadDocument(
       'https://pdftron.s3.amazonaws.com/downloads/pl/demo-annotated.pdf',
       {
