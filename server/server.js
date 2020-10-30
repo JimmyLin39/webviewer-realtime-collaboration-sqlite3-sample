@@ -13,7 +13,7 @@ const corsOption = {
 const server = new CollabServer({
   resolvers,
   corsOption,
-  logLevel: CollabServer.LogLevels.DEBUG,
+  logLevel: CollabServer.LogLevels.INFO,
 });
 
 server.start(port);
