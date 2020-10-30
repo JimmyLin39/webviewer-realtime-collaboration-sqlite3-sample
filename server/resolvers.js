@@ -87,10 +87,17 @@ module.exports = {
       );
       return res[0] || null;
     },
-    documentMember: async memberId => {
+    documentMember: async (documentId, userId, memberId) => {
+      if (memberId) {
+        const resWithMemberId = await getQueryResponse(
+          `SELECT * FROM annotationMembers WHERE id = ?`,
+          [memberId]
+        );
+        return resWithMemberId[0] || null;
+      }
       const res = await getQueryResponse(
-        `SELECT * FROM documentMembers WHERE id = ?`,
-        [memberId]
+        `SELECT * FROM documentMembers WHERE documentId = ? AND userId = ?`,
+        [documentId, userId]
       );
       return res[0] || null;
     },
