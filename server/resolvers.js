@@ -66,12 +66,12 @@ module.exports = {
       );
       return res[0] || null;
     },
-    document: async id => {
+    annotations: async docId => {
       const res = await getQueryResponse(
-        `SELECT * FROM documents WHERE id = ?`,
-        [id]
+        `SELECT * FROM annotations WHERE documentId = ?`,
+        [docId]
       );
-      return res[0] || null;
+      return res;
     },
     annotationMember: async (annotId, userId, memberId) => {
       if (memberId) {
@@ -84,6 +84,20 @@ module.exports = {
       const res = await getQueryResponse(
         `SELECT * FROM annotationMembers WHERE userId = ? AND annotationId = ?`,
         [userId, annotId]
+      );
+      return res[0] || null;
+    },
+    annotationMembers: async annotId => {
+      const res = await getQueryResponse(
+        `SELECT * FROM annotationMembers WHERE annotationId = ?`,
+        [annotId]
+      );
+      return res;
+    },
+    document: async id => {
+      const res = await getQueryResponse(
+        `SELECT * FROM documents WHERE id = ?`,
+        [id]
       );
       return res[0] || null;
     },
@@ -101,9 +115,9 @@ module.exports = {
       );
       return res[0] || null;
     },
-    annotations: async docId => {
+    documentMembers: async docId => {
       const res = await getQueryResponse(
-        `SELECT * FROM annotations WHERE documentId = ?`,
+        `SELECT * FROM documentMembers WHERE documentId = ?`,
         [docId]
       );
       return res;
@@ -115,19 +129,26 @@ module.exports = {
       );
       return res;
     },
-    annotationMembers: async annotId => {
-      const res = await getQueryResponse(
-        `SELECT * FROM annotationMembers WHERE annotationId = ?`,
-        [annotId]
+    annotationCount: async ({ documentId, since }) => {
+      const count = await getQueryResponse(
+        `SELECT COUNT(DISTINCT id)
+         FROM annotations
+         WHERE documentId = ? AND createdAt > ?`,
+        [documentId, since]
       );
-      return res;
+      return count;
     },
-    documentMembers: async docId => {
-      const res = await getQueryResponse(
-        `SELECT * FROM documentMembers WHERE documentId = ?`,
-        [docId]
+
+    annotationMemberCount: async ({ userId, documentId, since }) => {
+      const count = await getQueryResponse(
+        `SELECT COUNT(DISTINCT id)
+        FROM annotationMembers
+        WHERE documentId = ?
+          AND userId = ?
+          AND annotationCreatedAt > ?`,
+        [documentId, userId, since]
       );
-      return res;
+      return count;
     },
   },
   Mutation: {
@@ -222,11 +243,17 @@ module.exports = {
       const res = await getQueryResponse(
         `
           INSERT INTO documentMembers
-          (id, userId, documentId, lastRead)
+          (id, userId, documentId, lastRead, createdAt)
           VALUES
           (?, ?, ?, ?)
         `,
-        [member.id, member.userId, member.documentId, member.lastRead]
+        [
+          member.id,
+          member.userId,
+          member.documentId,
+          member.lastRead,
+          member.createdAt,
+        ]
       );
       return res[0] || null;
     },
@@ -258,7 +285,7 @@ module.exports = {
       const res = await getQueryResponse(
         `
           INSERT INTO annotationMembers
-          (id, documentId, lastRead, annotationId, permission, userId)
+          (id, documentId, lastRead, annotationId, userId, annotationCreatedAt)
           VALUES
           (?, ?, ?, ?, ?, ?)
         `,
@@ -267,8 +294,8 @@ module.exports = {
           member.documentId,
           member.lastRead,
           member.annotationId,
-          member.permission,
           member.userId,
+          member.annotationCreatedAt,
         ]
       );
       return res[0] || null;
@@ -277,10 +304,10 @@ module.exports = {
       const editedMemer = await getQueryResponse(
         `
           UPDATE annotationMembers
-          SET lastRead = ?, permission = ?
+          SET lastRead = ?
           WHERE id = ?
         `,
-        [editMemberInput.lastRead, editMemberInput.permission, id]
+        [editMemberInput.lastRead, id]
       );
       return editedMemer;
     },
